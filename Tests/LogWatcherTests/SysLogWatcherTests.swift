@@ -25,31 +25,6 @@ struct CameraEventProducer: EventProducer {
     }
 }
 
-final class SysLogWatcherManualIntegrationTests: XCTestCase {
-    // a way to manually run, trigger video, stop video, and confirm test pass
-    func skip_testHarness() throws {
-        let cameraStarted = expectation(description: "Camera started")
-        let cameraStopped = expectation(description: "Camera end")
-        
-        let _ = SysLogWatcher(sysLogText: CameraEventProducer.sysLogText, eventProducer: CameraEventProducer()) { result in
-            switch(result) {
-            case .success(let event):
-                switch(event) {
-                case .Start:
-                    cameraStarted.fulfill()
-                case .Stop:
-                    cameraStopped.fulfill()
-                }
-            case .failure(let data):
-                print("Error decoding data \(data)")
-            }
-        }
-        
-        let result = XCTWaiter.wait(for: [cameraStarted, cameraStopped], timeout: 30.0)
-        XCTAssertEqual(result, .completed, "result was \(result)")
-    }
-}
-
 final class SysLogWatcherUnitTests: XCTestCase {
     func testMacOsCameraEvents_OneEvent() {
         let cameraStopped = expectation(description: "Camera end")
@@ -102,12 +77,36 @@ final class SysLogWatcherUnitTests: XCTestCase {
         let result = XCTWaiter.wait(for: [cameraStarted, cameraStopped], timeout: 30.0)
         XCTAssertEqual(result, .completed, "result was \(result)")
     }
+}
 
+final class SysLogWatcherManualIntegrationTests: XCTestCase {
+    // a way to manually run, trigger video, stop video, and confirm test pass using real system log
+    func skip_testManual() throws {
+        let cameraStarted = expectation(description: "Camera started")
+        let cameraStopped = expectation(description: "Camera end")
+        
+        let _ = SysLogWatcher(sysLogText: CameraEventProducer.sysLogText, eventProducer: CameraEventProducer()) { result in
+            switch(result) {
+            case .success(let event):
+                switch(event) {
+                case .Start:
+                    cameraStarted.fulfill()
+                case .Stop:
+                    cameraStopped.fulfill()
+                }
+            case .failure(let data):
+                print("Error decoding data \(data)")
+            }
+        }
+        
+        let result = XCTWaiter.wait(for: [cameraStarted, cameraStopped], timeout: 30.0)
+        XCTAssertEqual(result, .completed, "result was \(result)")
+    }
 }
 
 fileprivate extension FileHandle {
     func writeln(_ line : String) {
         self.write((line + "\n").data(using: .utf8)!)
-        usleep(2000) // .002 seconds... a poor proxy for mirroring the line based buffering that comes from the stdout of a running process... this gives the the pipe time to flush each lins
+        usleep(2000) // .002 seconds... a poor proxy for mirroring the line based buffering that comes from the stdout of a running process... this gives the the pipe time to flush each line
     }
 }
