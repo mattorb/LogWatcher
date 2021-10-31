@@ -13,12 +13,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var popover : NSPopover!
     var statusBar: StatusBarController?
     var camTracker : SysLogWatcher?
+    let cameraState = CurrentCameraState()
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        let contentView = PopOverContentView()
+        let contentView = PopOverContentView(cameraState: cameraState)
 
         let popover = NSPopover()
-        popover.contentSize = NSSize(width: 200, height:100)
+        popover.contentSize = NSSize(width: 240, height:100)
         popover.behavior = .transient
         popover.contentViewController = NSHostingController(rootView: contentView)
         self.popover = popover
@@ -30,24 +31,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             case .success(let event):
                 switch(event) {
                 case .Start:
-                    //TODO: get the status over to SwiftUI
-                    break
+                    DispatchQueue.main.async {
+                        self.cameraState.state = .on
+                    }
                 case .Stop:
-                    //TODO: get the status over to SwiftUI
-                    break
+                    DispatchQueue.main.async {
+                        self.cameraState.state = .off
+                    }
                 }
             case .failure(let data):
                 print("Error decoding data \(data)")
-            }
+            
         }
-        
+      }
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
     }
+}
+
+class CurrentCameraState: ObservableObject {
+    @Published var state : CameraState = .unknown
+}
     
-    
+enum CameraState: String {
+    case on
+    case off
+    case unknown
 }
 
 enum CameraEvent {
