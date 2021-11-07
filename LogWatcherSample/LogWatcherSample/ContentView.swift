@@ -11,9 +11,14 @@ struct PopOverContentView: View {
     @ObservedObject var cameraState : CurrentCameraState
     
     var body: some View {
-        Text("Camera is \(cameraState.state.rawValue)")
-            .padding(30)
-            .truncationMode(.middle)
+        VStack {
+            Text("Camera is \(cameraState.state.rawValue)")
+                .padding(30)
+                .truncationMode(.middle)
+            Button("Quit") {
+                NSApp.terminate(nil)
+            }.padding()
+        }
     }
 }
 
