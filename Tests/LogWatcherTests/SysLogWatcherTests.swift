@@ -26,7 +26,7 @@ struct CameraEventProducer: EventProducer {
 }
 
 final class SysLogWatcherUnitTests: XCTestCase {
-    func testMacOsCameraEvents_OneEvent() {
+    func testMacOsExternalCameraEvents_OneEvent() {
         let cameraStopped = expectation(description: "Camera end")
         let pipe = Pipe()
 
@@ -50,7 +50,7 @@ final class SysLogWatcherUnitTests: XCTestCase {
         XCTAssertEqual(result, .completed)
     }
     
-    func testMacOsCameraEvents_StartAndEndSequence() {
+    func testMacOsExternalCameraEvents_StartAndEndSequence() {
         let cameraStarted = expectation(description: "Camera started")
         let cameraStopped = expectation(description: "Camera end")
         let pipe = Pipe()
@@ -77,11 +77,16 @@ final class SysLogWatcherUnitTests: XCTestCase {
         let result = XCTWaiter.wait(for: [cameraStarted, cameraStopped], timeout: 30.0)
         XCTAssertEqual(result, .completed, "result was \(result)")
     }
+    
+    //TODO:
+    //Internal camera events look a little different, process should probably be in the query
+    //AppleCameraAssistant    StartHardwareStream: creating frame receiver:  1280 x  720 (420v) [12.00,30.00]fps
+    //AppleCameraAssistant    StopHardwareStream
 }
 
 final class SysLogWatcherManualIntegrationTests: XCTestCase {
     // a way to manually run, trigger video, stop video, and confirm test pass using real system log
-    func skip_testManual() throws {
+    func skip_testManualExternalCamera() throws {
         let cameraStarted = expectation(description: "Camera started")
         let cameraStopped = expectation(description: "Camera end")
         
