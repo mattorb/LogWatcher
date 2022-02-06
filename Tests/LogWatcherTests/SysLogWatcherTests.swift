@@ -8,9 +8,10 @@ enum CameraEvent {
 
 struct CameraEventProducer: EventProducer {
     typealias SuccessResultType = CameraEvent
-    
-    static  let sysLogText = "Post event kCameraStream"
-    
+
+    static let sysLogText = "Post event kCameraStream"
+    static let sysLogPredicate = "eventMessage contains \"\(sysLogText)\""
+
     func transformToEvent(line: String) -> CameraEvent? {
         switch(line) {
         case _ where line.contains("Post event kCameraStreamStart"):
@@ -30,7 +31,7 @@ final class SysLogWatcherUnitTests: XCTestCase {
         let cameraStopped = expectation(description: "Camera end")
         let pipe = Pipe()
 
-        let _ = SysLogWatcher(sysLogText: CameraEventProducer.sysLogText, eventProducer: CameraEventProducer(), pipe: pipe) { result in
+        let _ = SysLogWatcher(sysLogPredicate: CameraEventProducer.sysLogPredicate, eventProducer: CameraEventProducer(), pipe: pipe) { result in
             switch(result) {
             case .success(let event):
                 switch(event) {
@@ -55,7 +56,7 @@ final class SysLogWatcherUnitTests: XCTestCase {
         let cameraStopped = expectation(description: "Camera end")
         let pipe = Pipe()
 
-        let _ = SysLogWatcher(sysLogText: CameraEventProducer.sysLogText, eventProducer: CameraEventProducer(), pipe: pipe) { result in
+        let _ = SysLogWatcher(sysLogPredicate: CameraEventProducer.sysLogPredicate, eventProducer: CameraEventProducer(), pipe: pipe) { result in
             switch(result) {
             case .success(let event):
                 switch(event) {
@@ -90,7 +91,7 @@ final class SysLogWatcherManualIntegrationTests: XCTestCase {
         let cameraStarted = expectation(description: "Camera started")
         let cameraStopped = expectation(description: "Camera end")
         
-        let _ = SysLogWatcher(sysLogText: CameraEventProducer.sysLogText, eventProducer: CameraEventProducer()) { result in
+        let _ = SysLogWatcher(sysLogPredicate: CameraEventProducer.sysLogPredicate, eventProducer: CameraEventProducer()) { result in
             switch(result) {
             case .success(let event):
                 switch(event) {

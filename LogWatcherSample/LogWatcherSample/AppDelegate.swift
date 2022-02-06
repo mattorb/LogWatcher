@@ -26,7 +26,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         statusBar = StatusBarController.init(popover)
         
-        camTracker = SysLogWatcher(sysLogText: CameraEventProducer.sysLogText, eventProducer: CameraEventProducer()) { result in
+        camTracker = SysLogWatcher(sysLogPredicate: CameraEventProducer.sysLogPredicate, eventProducer: CameraEventProducer()) { result in
             switch(result) {
             case .success(let event):
                 switch(event) {
@@ -69,7 +69,8 @@ enum CameraEvent {
 struct CameraEventProducer: EventProducer {
     typealias SuccessResultType = CameraEvent
     
-    static  let sysLogText = "Post event kCameraStream"
+    static let sysLogText = "Post event kCameraStream"
+    static let sysLogPredicate = "eventMessage contains \"\(sysLogText)\""
     
     func transformToEvent(line: String) -> CameraEvent? {
         switch(line) {
