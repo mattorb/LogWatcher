@@ -67,24 +67,46 @@ struct MontereyCameraEventProducer: EventProducer {
     }
 }
 
+struct InternalCameraEventProducer: EventProducer {
+    typealias SuccessResultType = CameraEvent
+
+    static let sysLogPredicate = "process == \"AppleCameraAssistant\""
+    
+    public func transformToEvent(line: String) -> CameraEvent? {
+        switch(line) {
+        case _ where line.contains("StartHardwareStream"):
+            return .Start
+        case _ where line.contains("StopHardwareStream"):
+            return .Stop
+        default:
+            break
+        }
+        
+        return nil  // ignored
+    }
+}
+
 public struct CameraEventProducer: EventProducer {
     public typealias SuccessResultType = CameraEvent
 
     public var predicates: [String] {
-        [BigSurCameraEventProducer.sysLogPredicate, MontereyCameraEventProducer.sysLogPredicate]
+        [BigSurCameraEventProducer.sysLogPredicate, MontereyCameraEventProducer.sysLogPredicate, InternalCameraEventProducer.sysLogPredicate]
     }
     
-    let montereyExternal = MontereyCameraEventProducer()
-    let bigSurExternal = BigSurCameraEventProducer()
+    let montereyExternalCamera = MontereyCameraEventProducer()
+    let bigSurExternalCamera = BigSurCameraEventProducer()
+    let internalCamera = InternalCameraEventProducer()
     
     public init() {
         // make it accessible outside the module
     }
     
     public func transformToEvent(line: String) -> CameraEvent? {
-        if let event = montereyExternal.transformToEvent(line: line) {
+        if let event = montereyExternalCamera.transformToEvent(line: line) {
             return event
-        } else if let event = bigSurExternal.transformToEvent(line: line) {
+        } else if let event = bigSurExternalCamera.transformToEvent(line: line) {
+            return event
+        } else if let event = internalCamera.transformToEvent(line: line) {
             return event
         } else {
             return nil // ignored

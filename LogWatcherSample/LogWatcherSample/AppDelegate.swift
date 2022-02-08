@@ -26,7 +26,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         statusBar = StatusBarController.init(popover)
         
-        camTracker = SysLogWatcher(sysLogPredicate: BigSurCameraEventProducer.sysLogPredicate, eventProducer: BigSurCameraEventProducer()) { result in
+        let eventProducer = CameraEventProducer()
+        
+        camTracker = SysLogWatcher(predicates: eventProducer.predicates, eventProducer: eventProducer) { result in
             switch(result) {
             case .success(let event):
                 switch(event) {

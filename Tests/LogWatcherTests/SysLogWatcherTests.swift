@@ -100,12 +100,35 @@ final class SysLogWatcherUnitTests: XCTestCase {
         XCTAssertEqual(result, .completed, "result was \(result)")
     }
     
-    //TODO: Built in macbook camera support
-    func skip_testMacbookInternalCamera() {
-        //Internal camera events look a little different, process should probably be in the query
-        //AppleCameraAssistant    StartHardwareStream: creating frame receiver:  1280 x  720 (420v) [12.00,30.00]fps
-        //AppleCameraAssistant    StopHardwareStream
-        //process = AppleCameraAssistant
+    func testMacbookInternalCamera() {
+        let cameraStarted = expectation(description: "Camera started")
+        let cameraStopped = expectation(description: "Camera end")
+        let pipe = Pipe()
+
+        let eventProducer = CameraEventProducer()
+        
+        let _ = SysLogWatcher(predicates: eventProducer.predicates, eventProducer: eventProducer, pipe: pipe) { result in
+            switch(result) {
+            case .success(let event):
+                switch(event) {
+                case .Start:
+                    cameraStarted.fulfill()
+                case .Stop:
+                    cameraStopped.fulfill()
+                }
+            case .failure(let data):
+                print("Error decoding data \(data)")
+            }
+        }
+        
+        let handle = pipe.fileHandleForWriting
+        handle.writeln("some garbarge that should be ignored")
+        handle.writeln("default    22:14:44.040481-0500    AppleCameraAssistant    StartHardwareStream: creating frame receiver:  1280 x  720 (420v) [12.00,30.00]fps")
+        handle.writeln("other misc logging kCameraStreamChanged")
+        handle.writeln("default    22:20:18.574958-0500    AppleCameraAssistant    StopHardwareStream")
+
+        let result = XCTWaiter.wait(for: [cameraStarted, cameraStopped], timeout: 5.0)
+        XCTAssertEqual(result, .completed, "result was \(result)")
     }
 }
 
