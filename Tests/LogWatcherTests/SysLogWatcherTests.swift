@@ -6,7 +6,9 @@ final class SysLogWatcherUnitTests: XCTestCase {
         let cameraStopped = expectation(description: "Camera end")
         let pipe = Pipe()
 
-        let _ = SysLogWatcher(sysLogPredicate: BigSurCameraEventProducer.sysLogPredicate, eventProducer: BigSurCameraEventProducer(), pipe: pipe) { result in
+        let eventProducer = CameraEventProducer()
+        
+        let _ = SysLogWatcher(predicates: eventProducer.predicates, eventProducer: eventProducer, pipe: pipe) { result in
             switch(result) {
             case .success(let event):
                 switch(event) {
@@ -31,7 +33,9 @@ final class SysLogWatcherUnitTests: XCTestCase {
         let cameraStopped = expectation(description: "Camera end")
         let pipe = Pipe()
 
-        let _ = SysLogWatcher(sysLogPredicate: BigSurCameraEventProducer.sysLogPredicate, eventProducer: BigSurCameraEventProducer(), pipe: pipe) { result in
+        let eventProducer = CameraEventProducer()
+        
+        let _ = SysLogWatcher(predicates: eventProducer.predicates, eventProducer: eventProducer, pipe: pipe) { result in
             switch(result) {
             case .success(let event):
                 switch(event) {
@@ -60,7 +64,8 @@ final class SysLogWatcherUnitTests: XCTestCase {
         let cameraStopped = expectation(description: "Camera end")
         let pipe = Pipe()
         
-        let _ = SysLogWatcher(sysLogPredicate: MontereyCameraEventProducer.sysLogPredicate, eventProducer: MontereyCameraEventProducer(), pipe: pipe) { result in
+        let eventProducer = CameraEventProducer()
+        let _ = SysLogWatcher(predicates: eventProducer.predicates, eventProducer: eventProducer, pipe: pipe) { result in
             switch(result) {
             case .success(let event):
                 switch(event) {
@@ -100,6 +105,7 @@ final class SysLogWatcherUnitTests: XCTestCase {
         //Internal camera events look a little different, process should probably be in the query
         //AppleCameraAssistant    StartHardwareStream: creating frame receiver:  1280 x  720 (420v) [12.00,30.00]fps
         //AppleCameraAssistant    StopHardwareStream
+        //process = AppleCameraAssistant
     }
 }
 
@@ -117,7 +123,7 @@ final class SysLogWatcherManualIntegrationTests: XCTestCase {
             }
         }
         
-        let _ = SysLogWatcher(sysLogPredicate: EventLogger.sysLogPredicate, eventProducer: EventLogger()) { result in
+        let _ = SysLogWatcher(predicates: [EventLogger.sysLogPredicate], eventProducer: EventLogger()) { result in
             switch(result) {
             case .success(_):
                 break
@@ -134,7 +140,9 @@ final class SysLogWatcherManualIntegrationTests: XCTestCase {
         let cameraStarted = expectation(description: "Camera started")
         let cameraStopped = expectation(description: "Camera end")
 
-        let _ = SysLogWatcher(sysLogPredicate: BigSurCameraEventProducer.sysLogPredicate, eventProducer: BigSurCameraEventProducer()) { result in
+        let eventProducer = CameraEventProducer()
+        
+        let _ = SysLogWatcher(predicates: eventProducer.predicates, eventProducer: eventProducer) { result in
             switch(result) {
             case .success(let event):
                 switch(event) {
