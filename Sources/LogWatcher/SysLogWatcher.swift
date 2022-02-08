@@ -23,3 +23,54 @@ public class SysLogWatcher : LogWatcher {
         }
     }
 }
+
+public enum CameraEvent {
+    case Start
+    case Stop
+}
+
+public struct BigSurCameraEventProducer: EventProducer {
+    public typealias SuccessResultType = CameraEvent
+
+    public static let sysLogPredicate = "eventMessage contains \"Post event kCameraStream\""
+
+    public init() {
+        // make it accessible outside the module
+    }
+    
+    public func transformToEvent(line: String) -> CameraEvent? {
+        switch(line) {
+        case _ where line.contains("Post event kCameraStreamStart"):
+            return .Start
+        case _ where line.contains("Post event kCameraStreamStop"):
+            return .Stop
+        default:
+            break
+        }
+        
+        return nil  // ignored
+    }
+}
+
+public struct MontereyCameraEventProducer: EventProducer {
+    public typealias SuccessResultType = CameraEvent
+
+    public static let sysLogPredicate = "subsystem contains \"com.apple.UVCExtension\" and composedMessage contains \"Post PowerLog\""
+    
+    public init() {
+        // make it accessible outside the module
+    }
+
+    public func transformToEvent(line: String) -> CameraEvent? {
+        switch(line) {
+        case _ where line.contains("\"VDCAssistant_Power_State\" = On;"):
+            return .Start
+        case _ where line.contains("\"VDCAssistant_Power_State\" = Off;"):
+            return .Stop
+        default:
+            break
+        }
+        
+        return nil  // ignored
+    }
+}
