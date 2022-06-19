@@ -67,6 +67,25 @@ struct MontereyCameraEventProducer: EventProducer {
     }
 }
 
+struct MontereyInternalCameraEventProducer: EventProducer {
+    typealias SuccessResultType = CameraEvent
+
+    static let sysLogPredicate = "process == \"appleh13camerad\" and composedMessage contains\"Powering\""
+    
+    public func transformToEvent(line: String) -> CameraEvent? {
+        switch(line) {
+        case _ where line.contains("Powering ON camera"):
+            return .Start
+        case _ where line.contains("Powering OFF camera"):
+            return .Stop
+        default:
+            break
+        }
+        
+        return nil  // ignored
+    }
+}
+
 struct InternalCameraEventProducer: EventProducer {
     typealias SuccessResultType = CameraEvent
 
@@ -90,10 +109,13 @@ public struct CameraEventProducer: EventProducer {
     public typealias SuccessResultType = CameraEvent
 
     public var predicates: [String] {
-        [BigSurCameraEventProducer.sysLogPredicate, MontereyCameraEventProducer.sysLogPredicate, InternalCameraEventProducer.sysLogPredicate]
+        [BigSurCameraEventProducer.sysLogPredicate, MontereyCameraEventProducer.sysLogPredicate,
+            MontereyInternalCameraEventProducer.sysLogPredicate,
+            InternalCameraEventProducer.sysLogPredicate]
     }
     
     let montereyExternalCamera = MontereyCameraEventProducer()
+    let montereyInternalCamera = MontereyInternalCameraEventProducer()
     let bigSurExternalCamera = BigSurCameraEventProducer()
     let internalCamera = InternalCameraEventProducer()
     
@@ -103,6 +125,8 @@ public struct CameraEventProducer: EventProducer {
     
     public func transformToEvent(line: String) -> CameraEvent? {
         if let event = montereyExternalCamera.transformToEvent(line: line) {
+            return event
+        } else if let event = montereyInternalCamera.transformToEvent(line: line) {
             return event
         } else if let event = bigSurExternalCamera.transformToEvent(line: line) {
             return event
