@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "logwatcher",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/mattorb/LogWatcher",
+      "state" : {
+        "branch" : "main",
+        "revision" : "d5ff668c5c068e50d0de5e612b86c7b4fd2040b5"
+      }
+    }
+  ],
+  "version" : 2
+}
